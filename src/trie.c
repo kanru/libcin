@@ -17,12 +17,24 @@ listnode_alloc(char* value)
 }
 
 void
-listnode_free(struct ListNode* values)
+listnode_append(struct ListNode* head, struct ListNode* new_node)
+{
+  struct ListNode* node;
+  for (node = head; node; node = node->next)
+    {
+      if (!node->next)
+        break;
+    }
+  node->next = new_node;
+}
+
+void
+listnode_free(struct ListNode* head)
 {
   struct ListNode* node;
   struct ListNode* next_node;
 
-  for (node = values; node;)
+  for (node = head; node;)
     {
       next_node = node->next;
       free(node->value);
@@ -128,8 +140,10 @@ trie_insert(struct Trie* trie, char* keys, char* value)
     }
 
   struct ListNode* new_value = listnode_alloc(value);
-  new_value->next = node->values;
-  node->values = new_value;
+  if (node->values)
+    listnode_append(node->values, new_value);
+  else
+    node->values = new_value;
 
   return;
 }

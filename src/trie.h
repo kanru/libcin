@@ -30,6 +30,7 @@ struct TrieNode* trienode_alloc();
 void trienode_free(struct TrieNode* trie_node);
 
 struct ListNode* listnode_alloc();
-void listnode_free(struct ListNode* list_node);
+void listnode_append(struct ListNode* head, struct ListNode* new_node);
+void listnode_free(struct ListNode* head);
 
 #endif /* LIBCIN_TRIE_H */
