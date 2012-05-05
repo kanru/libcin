@@ -14,18 +14,18 @@ key_value_split(char* buf, size_t length)
 {
   char* end = buf+length;
   char* c;
-  for (c = buf; !isspace(*c) && c != end; c++);
+  for (c = buf; c != end && !isspace(*c); c++);
   *c = 0;
 
   if (c == end)
     return NULL;
 
   char* v;
-  for (c++; isspace(*c) && c != end; c++);
+  for (c++; c != end && isspace(*c); c++);
   if (c != end)
     v = c;
 
-  for (c++; !isspace(*c) && c != end; c++);
+  for (c++; c != end && !isspace(*c); c++);
   *c = 0;
 
   *end = 0;
@@ -37,7 +37,7 @@ struct CinData*
 libcin_open_cin(char* cin_filename)
 {
   struct CinData* cin = calloc(1, sizeof(struct CinData));
-  char buf[255];
+  char buf[255] = {0};
   FILE* input = fopen(cin_filename, "r");
   while (fgets(&buf[0], sizeof(buf), input) != NULL)
     {
@@ -90,7 +90,7 @@ libcin_load_data(struct CinData* cin_data)
   cin_data->charmap = trie_alloc();
 
   unsigned char phase = 0;
-  char buf[255];
+  char buf[255] = {0};
   FILE* input = fopen(cin_data->filename, "r");
   while (fgets(&buf[0], sizeof(buf), input) != NULL)
     {
