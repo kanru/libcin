@@ -85,13 +85,16 @@ trie_search(struct Trie* trie, char* keys)
 
   for (;;)
     {
-      if (!node || key_idx >= key_len)
+      if (!node)
         break;
 
-      if (node->key == keys[key_idx])
+      if (node->key == tolower(keys[key_idx]))
         {
           key_idx++;
-          node = node->next;
+          if (key_idx >= key_len)
+            break;
+          else
+            node = node->next;
         }
       else
         node = node->sibling;
@@ -113,19 +116,19 @@ trie_insert(struct Trie* trie, char* keys, char* value)
   if (!node)
     {
       node = trie->root = trienode_alloc();
-      node->key = keys[0];
+      node->key = tolower(keys[0]);
     }
 
   for (;;)
     {
-      if (key_idx >= key_len)
-        break;
-
       struct TrieNode** next_node;
-      if (node->key == keys[key_idx])
+      if (node->key == tolower(keys[key_idx]))
         {
           key_idx++;
-          next_node = &node->next;
+          if (key_idx >= key_len)
+            break;
+          else
+            next_node = &node->next;
         }
       else
         next_node = &node->sibling;
@@ -133,7 +136,7 @@ trie_insert(struct Trie* trie, char* keys, char* value)
       if (!*next_node)
         {
           *next_node = trienode_alloc();
-          (*next_node)->key = keys[key_idx];
+          (*next_node)->key = tolower(keys[key_idx]);
         }
 
       node = *next_node;
