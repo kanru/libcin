@@ -9,6 +9,30 @@
 #include "cin.h"
 #include "trie.h"
 
+static char*
+key_value_split(char* buf, size_t length)
+{
+  char* end = buf+length;
+  char* c;
+  for (c = buf; !isspace(*c) && c != end; c++);
+  *c = 0;
+
+  if (c == end)
+    return NULL;
+
+  char* v;
+  for (c++; isspace(*c) && c != end; c++);
+  if (c != end)
+    v = c;
+
+  for (c++; *c != '\n' && *c != '\r' && c != end; c++);
+  *c = 0;
+
+  *end = 0;
+
+  return v;
+}
+
 struct CinData*
 libcin_open_cin(char* cin_filename)
 {
@@ -17,14 +41,8 @@ libcin_open_cin(char* cin_filename)
   FILE* input = fopen(cin_filename, "r");
   while (fgets(&buf[0], sizeof(buf), input) != NULL)
     {
-      char* delim = strchr(buf, ' ');
-      char* eol = strchr(buf, '\n');
+      char* value = key_value_split(buf, sizeof(buf));
       char* key = &buf[0];
-      char* value = delim+1;
-      if (delim)
-        *delim = 0;
-      if (eol)
-        *eol = 0;
 
       if (!strcmp(key, "%gen_inp"))
         cin->engine = strdup("gen_inp");
@@ -76,14 +94,8 @@ libcin_load_data(struct CinData* cin_data)
   FILE* input = fopen(cin_data->filename, "r");
   while (fgets(&buf[0], sizeof(buf), input) != NULL)
     {
-      char* delim = strchr(buf, ' ');
-      char* eol = strchr(buf, '\n');
+      char* value = key_value_split(buf, sizeof(buf));
       char* key = &buf[0];
-      char* value = delim+1;
-      if (delim)
-        *delim = 0;
-      if (eol)
-        *eol = 0;
 
       if (!strcmp(key, "%keyname") && !strcmp(value, "begin"))
         phase = 1;
