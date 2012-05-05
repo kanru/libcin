@@ -6,13 +6,14 @@
 
 AC_PREREQ([2.68])
 AC_INIT([libcin], [0.1.0])
+AC_CONFIG_AUX_DIR([autotools])
+AC_CONFIG_SRCDIR([src/trie.c])
+AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE
 AM_MAINTAINER_MODE([enable])
 AM_SILENT_RULES([yes])
 LT_INIT
-AC_CONFIG_SRCDIR([src/trie.c])
-AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_MACRO_DIR([m4])
 
 # increment if the interface has additions, changes, removals.
 LIBCIN_CURRENT=0
