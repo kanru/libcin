@@ -29,7 +29,7 @@ struct ListNode* trie_search(struct Trie* trie, char* keys);
 struct TrieNode* trienode_alloc();
 void trienode_free(struct TrieNode* trie_node);
 
-struct ListNode* listnode_alloc();
+struct ListNode* listnode_alloc(char* value);
 void listnode_append(struct ListNode* head, struct ListNode* new_node);
 void listnode_free(struct ListNode* head);
 
