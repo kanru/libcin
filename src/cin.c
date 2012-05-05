@@ -25,7 +25,7 @@ key_value_split(char* buf, size_t length)
   if (c != end)
     v = c;
 
-  for (c++; *c != '\n' && *c != '\r' && c != end; c++);
+  for (c++; !isspace(*c) && c != end; c++);
   *c = 0;
 
   *end = 0;
