@@ -15,8 +15,8 @@ libcin_la_LDFLAGS = \
 	-export-symbols $(top_srcdir)/libcin.sym
 libcin_la_DEPENDENCIES = $(top_srcdir)/libcin.sym
 
-bin_PROGRAMS = t
-t_SOURCES = test/test.c
-t_CFLAGS = -I $(top_srcdir)/src
-t_LDADD = libcin.la
-t_LDFLAGS = -static
+bin_PROGRAMS = test
+test_SOURCES = t/test.c
+test_CFLAGS = -I $(top_srcdir)/src
+test_LDADD = libcin.la
+test_LDFLAGS = -static

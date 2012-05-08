@@ -27,7 +27,7 @@ main(int argc, char* argv[])
 {
   if (argc < 2)
     {
-      printf("Usage: t <test.cin>\n");
+      printf("Usage: test <test.cin>\n");
       return 1;
     }
 
