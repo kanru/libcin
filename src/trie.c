@@ -119,7 +119,31 @@ trie_search1(struct TrieNode* node,
   if (!node)
     return;
 
-  if (node->key == tolower(keys[idx]))
+  if (keys[idx] == '*')
+    {
+    }
+  else if (keys[idx] == '?')
+    {
+      idx++;
+      if (idx > max)
+        return;
+      else if (idx == max)
+        {
+          struct TrieNode* sibling;
+          for (sibling = node; sibling; sibling = sibling->sibling)
+            {
+              struct ListNode* value = listnode_alloc(sibling->values);
+              list_append(result, value);
+            }
+        }
+      else
+        {
+          struct TrieNode* sibling;
+          for (sibling = node; sibling; sibling = sibling->sibling)
+            trie_search1(sibling->next, keys, idx, max, result);
+        }
+    }
+  else if (node->key == tolower(keys[idx]))
     {
       idx++;
       if (idx > max)
@@ -133,7 +157,7 @@ trie_search1(struct TrieNode* node,
         trie_search1(node->next, keys, idx, max, result);
     }
   else
-    trie_search1(node->sibling,  keys, idx, max, result);
+    trie_search1(node->sibling, keys, idx, max, result);
 }
 
 void
