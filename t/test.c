@@ -10,15 +10,19 @@
 #include "trie.h"
 
 static void
-print_list(struct List* values)
+print_list(struct List* result)
 {
-  if (!values)
+  if (!result)
     return;
 
-  struct ListNode* node;
-  for (node = values->head; node; node = node->next)
+  struct ListNode* values;
+  for (values = result->head; values; values = values->next)
     {
-      printf("%s\n", (char*)node->value);
+      struct ListNode* node;
+      for (node = ((struct List*)values->value)->head; node; node = node->next)
+        {
+          printf("%s\n", (char*)node->value);
+        }
     }
 }
 
@@ -44,7 +48,9 @@ main(int argc, char* argv[])
   printf("> ");
   while (scanf("%s", &buf[0]) != EOF)
     {
-      print_list(trie_search(cin_data->charmap, buf));
+      struct List* result = trie_search(cin_data->charmap, buf);
+      print_list(result);
+      trie_search_free(result);
       printf("> ");
     }
 

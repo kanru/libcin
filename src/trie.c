@@ -10,9 +10,11 @@
 #include "trie.h"
 
 struct List*
-list_alloc()
+list_alloc(listnode_free_method* dealloc)
 {
-  return calloc(1, sizeof(struct List));
+  struct List* list = calloc(1, sizeof(struct List));
+  list->dealloc = dealloc;
+  return list;
 }
 
 void
@@ -20,7 +22,7 @@ list_free(struct List* list)
 {
   if (list)
     {
-      listnode_free(list->head);
+      listnode_free(list->head, list->dealloc);
       free(list);
     }
 }
@@ -41,15 +43,15 @@ list_append(struct List* list, struct ListNode* node)
 }
 
 struct ListNode*
-listnode_alloc(char* value)
+listnode_alloc(void* value)
 {
   struct ListNode* node = calloc(1, sizeof(struct ListNode));
-  node->value = strdup(value);
+  node->value = value;
   return node;
 }
 
 void
-listnode_free(struct ListNode* head)
+listnode_free(struct ListNode* head, listnode_free_method* dealloc)
 {
   struct ListNode* node;
   struct ListNode* next_node;
@@ -57,7 +59,7 @@ listnode_free(struct ListNode* head)
   for (node = head; node;)
     {
       next_node = node->next;
-      free(node->value);
+      (*dealloc)(node->value);
       free(node);
       node = next_node;
     }
@@ -96,34 +98,51 @@ trie_free(struct Trie* trie)
   free(trie);
 }
 
+static void
+noop(void* value)
+{}
+
 struct List*
 trie_search(struct Trie* trie, char* keys)
 {
   unsigned short key_idx = 0;
   unsigned short key_len = strlen(keys);
   struct TrieNode* node = trie->root;
+  struct List* result = list_alloc(noop);
 
-  for (;;)
+  trie_search1(node, keys, key_idx, key_len, result);
+  return result;
+}
+
+void
+trie_search1(struct TrieNode* node,
+             char* keys, unsigned short idx, unsigned short max,
+             struct List* result)
+{
+  if (!node)
+    return;
+
+  if (node->key == tolower(keys[idx]))
     {
-      if (!node)
-        break;
-
-      if (node->key == tolower(keys[key_idx]))
+      idx++;
+      if (idx > max)
+        return;
+      else if (idx == max)
         {
-          key_idx++;
-          if (key_idx >= key_len)
-            break;
-          else
-            node = node->next;
+          struct ListNode* value = listnode_alloc(node->values);
+          list_append(result, value);
         }
       else
-        node = node->sibling;
+        trie_search1(node->next, keys, idx, max, result);
     }
-
-  if (node && key_idx == key_len)
-    return node->values;
   else
-    return NULL;
+    trie_search1(node->sibling,  keys, idx, max, result);
+}
+
+void
+trie_search_free(struct List* result)
+{
+  list_free(result);
 }
 
 void
@@ -163,8 +182,8 @@ trie_insert(struct Trie* trie, char* keys, char* value)
     }
 
   if (!node->values)
-    node->values = list_alloc();
-  struct ListNode* new_value = listnode_alloc(value);
+    node->values = list_alloc(free);
+  struct ListNode* new_value = listnode_alloc(strdup(value));
   list_append(node->values, new_value);
 
   return;
