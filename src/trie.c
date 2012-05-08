@@ -59,7 +59,8 @@ listnode_free(struct ListNode* head, listnode_free_method* dealloc)
   for (node = head; node;)
     {
       next_node = node->next;
-      (*dealloc)(node->value);
+      if (dealloc)
+        (*dealloc)(node->value);
       free(node);
       node = next_node;
     }
@@ -98,17 +99,13 @@ trie_free(struct Trie* trie)
   free(trie);
 }
 
-static void
-noop(void* value)
-{}
-
 struct List*
 trie_search(struct Trie* trie, char* keys)
 {
   unsigned short key_idx = 0;
   unsigned short key_len = strlen(keys);
   struct TrieNode* node = trie->root;
-  struct List* result = list_alloc(noop);
+  struct List* result = list_alloc(NULL);
 
   trie_search1(node, keys, key_idx, key_len, result);
   return result;
