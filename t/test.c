@@ -12,12 +12,12 @@
 static void
 print_list(struct List* result)
 {
-  if (!result)
-    return;
-
   struct ListNode* values;
   for (values = result->head; values; values = values->next)
     {
+      if (!values->value)
+        continue;
+
       struct ListNode* node;
       for (node = ((struct List*)values->value)->head; node; node = node->next)
         {
