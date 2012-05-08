@@ -8,24 +8,43 @@
 
 #include "trie.h"
 
+struct List*
+list_alloc()
+{
+  return calloc(1, sizeof(struct List));
+}
+
+void
+list_free(struct List* list)
+{
+  if (list)
+    {
+      listnode_free(list->head);
+      free(list);
+    }
+}
+
+void
+list_append(struct List* list, struct ListNode* node)
+{
+  if (list->head)
+    {
+      list->tail->next = node;
+      list->tail = node;
+    }
+  else
+    {
+      list->head = node;
+      list->tail = node;
+    }
+}
+
 struct ListNode*
 listnode_alloc(char* value)
 {
   struct ListNode* node = calloc(1, sizeof(struct ListNode));
   node->value = strdup(value);
   return node;
-}
-
-void
-listnode_append(struct ListNode* head, struct ListNode* new_node)
-{
-  struct ListNode* node;
-  for (node = head; node; node = node->next)
-    {
-      if (!node->next)
-        break;
-    }
-  node->next = new_node;
 }
 
 void
@@ -58,7 +77,7 @@ trienode_free(struct TrieNode* node)
   if (node->next)
     trienode_free(node->next);
 
-  listnode_free(node->values);
+  list_free(node->values);
   free(node);
 }
 
@@ -76,7 +95,7 @@ trie_free(struct Trie* trie)
   free(trie);
 }
 
-struct ListNode*
+struct List*
 trie_search(struct Trie* trie, char* keys)
 {
   unsigned short key_idx = 0;
@@ -142,11 +161,10 @@ trie_insert(struct Trie* trie, char* keys, char* value)
       node = *next_node;
     }
 
+  if (!node->values)
+    node->values = list_alloc();
   struct ListNode* new_value = listnode_alloc(value);
-  if (node->values)
-    listnode_append(node->values, new_value);
-  else
-    node->values = new_value;
+  list_append(node->values, new_value);
 
   return;
 }

@@ -10,10 +10,13 @@
 #include "trie.h"
 
 static void
-print_list(struct ListNode* values)
+print_list(struct List* values)
 {
+  if (!values)
+    return;
+
   struct ListNode* node;
-  for (node = values; node; node = node->next)
+  for (node = values->head; node; node = node->next)
     {
       printf("%s\n", node->value);
     }

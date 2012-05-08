@@ -7,13 +7,18 @@
 
 struct ListNode {
   struct ListNode* next;
-  char* value;
+  void* value;
+};
+
+struct List {
+  struct ListNode* head;
+  struct ListNode* tail;
 };
 
 struct TrieNode {
   struct TrieNode* next;
   struct TrieNode* sibling;
-  struct ListNode* values;
+  struct List* values;
   char key;
 };
 
@@ -24,10 +29,13 @@ struct Trie {
 struct Trie* trie_alloc();
 void trie_free(struct Trie* trie);
 void trie_insert(struct Trie* trie, char* keys, char* value);
-struct ListNode* trie_search(struct Trie* trie, char* keys);
+struct List* trie_search(struct Trie* trie, char* keys);
 
 struct TrieNode* trienode_alloc();
 void trienode_free(struct TrieNode* trie_node);
+
+struct List* list_alloc();
+void list_free(struct List* list);
 
 struct ListNode* listnode_alloc(char* value);
 void listnode_append(struct ListNode* head, struct ListNode* new_node);
