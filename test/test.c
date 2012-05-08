@@ -18,7 +18,7 @@ print_list(struct List* values)
   struct ListNode* node;
   for (node = values->head; node; node = node->next)
     {
-      printf("%s\n", node->value);
+      printf("%s\n", (char*)node->value);
     }
 }
 
