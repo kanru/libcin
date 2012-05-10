@@ -67,9 +67,11 @@ listnode_free(struct ListNode* head, listnode_free_method* dealloc)
 }
 
 struct TrieNode*
-trienode_alloc()
+trienode_alloc(char key)
 {
-  return calloc(1, sizeof(struct TrieNode));
+  struct TrieNode* node = calloc(1, sizeof(struct TrieNode));
+  node->key = key;
+  return node;
 }
 
 void
@@ -85,6 +87,60 @@ trienode_free(struct TrieNode* node)
   free(node);
 }
 
+struct TrieNode*
+trienode_next(struct TrieNode* trie_node)
+{
+  return trie_node->next;
+}
+
+struct TrieNode*
+trienode_sibling(struct TrieNode* trie_node)
+{
+  return trie_node->sibling;
+}
+
+char
+trienode_key(struct TrieNode* trie_node)
+{
+  return trie_node->key;
+}
+
+struct List*
+trienode_values(struct TrieNode* trie_node)
+{
+  return trie_node->values;
+}
+
+void
+trienode_set_next(struct TrieNode* trie_node, struct TrieNode* next)
+{
+  trie_node->next = next;
+}
+
+void
+trienode_set_sibling(struct TrieNode* trie_node, struct TrieNode* sibling)
+{
+  trie_node->sibling = sibling;
+}
+
+void
+trienode_set_values(struct TrieNode* trie_node, struct List* values)
+{
+  trie_node->values = values;
+}
+
+struct TrieNode*
+trie_root(struct Trie* trie)
+{
+  return trie->root;
+}
+
+void
+trie_set_root(struct Trie* trie, struct TrieNode* node)
+{
+  trie->root = node;
+}
+
 struct Trie*
 trie_alloc()
 {
@@ -94,8 +150,8 @@ trie_alloc()
 void
 trie_free(struct Trie* trie)
 {
-  if (trie->root != NULL)
-    trienode_free(trie->root);
+  if (trie_root(trie) != NULL)
+    trienode_free(trie_root(trie));
   free(trie);
 }
 
@@ -104,7 +160,7 @@ trie_search(struct Trie* trie, char* keys)
 {
   unsigned short key_idx = 0;
   unsigned short key_len = strlen(keys);
-  struct TrieNode* node = trie->root;
+  struct TrieNode* node = trie_root(trie);
   struct List* result = list_alloc(NULL);
 
   trie_search1(node, keys, key_idx, key_len, result);
@@ -130,34 +186,34 @@ trie_search1(struct TrieNode* node,
       else if (idx == max)
         {
           struct TrieNode* sibling;
-          for (sibling = node; sibling; sibling = sibling->sibling)
+          for (sibling = node; sibling; sibling = trienode_sibling(sibling))
             {
-              struct ListNode* value = listnode_alloc(sibling->values);
+              struct ListNode* value = listnode_alloc(trienode_values(sibling));
               list_append(result, value);
             }
         }
       else
         {
           struct TrieNode* sibling;
-          for (sibling = node; sibling; sibling = sibling->sibling)
-            trie_search1(sibling->next, keys, idx, max, result);
+          for (sibling = node; sibling; sibling = trienode_sibling(sibling))
+            trie_search1(trienode_next(sibling), keys, idx, max, result);
         }
     }
-  else if (node->key == tolower(keys[idx]))
+  else if (trienode_key(node) == tolower(keys[idx]))
     {
       idx++;
       if (idx > max)
         return;
       else if (idx == max)
         {
-          struct ListNode* value = listnode_alloc(node->values);
+          struct ListNode* value = listnode_alloc(trienode_values(node));
           list_append(result, value);
         }
       else
-        trie_search1(node->next, keys, idx, max, result);
+        trie_search1(trienode_next(node), keys, idx, max, result);
     }
   else
-    trie_search1(node->sibling, keys, idx, max, result);
+    trie_search1(trienode_sibling(node), keys, idx, max, result);
 }
 
 void
@@ -171,41 +227,40 @@ trie_insert(struct Trie* trie, char* keys, char* value)
 {
   unsigned short key_idx = 0;
   unsigned short key_len = strlen(keys);
-  struct TrieNode* node = trie->root;
+  struct TrieNode* node = trie_root(trie);
 
   if (!node)
     {
-      node = trie->root = trienode_alloc();
-      node->key = tolower(keys[0]);
+      node = trienode_alloc(tolower(keys[0]));
+      trie_set_root(trie, node);
     }
 
   for (;;)
     {
-      struct TrieNode** next_node;
-      if (node->key == tolower(keys[key_idx]))
+      if (trienode_key(node) == tolower(keys[key_idx]))
         {
           key_idx++;
           if (key_idx >= key_len)
             break;
           else
-            next_node = &node->next;
+            {
+              if (!trienode_next(node))
+                trienode_set_next(node, trienode_alloc(keys[key_idx]));
+              node = trienode_next(node);
+            }
         }
       else
-        next_node = &node->sibling;
-
-      if (!*next_node)
         {
-          *next_node = trienode_alloc();
-          (*next_node)->key = tolower(keys[key_idx]);
+          if (!trienode_sibling(node))
+            trienode_set_sibling(node, trienode_alloc(keys[key_idx]));
+          node = trienode_sibling(node);
         }
-
-      node = *next_node;
     }
 
-  if (!node->values)
-    node->values = list_alloc(free);
+  if (!trienode_values(node))
+    trienode_set_values(node, list_alloc(free));
   struct ListNode* new_value = listnode_alloc(strdup(value));
-  list_append(node->values, new_value);
+  list_append(trienode_values(node), new_value);
 
   return;
 }
