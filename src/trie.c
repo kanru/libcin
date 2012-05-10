@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -168,6 +169,43 @@ trie_search(struct Trie* trie, char* keys)
 }
 
 void
+trie_search_star(struct TrieNode* node,
+                 char* keys, unsigned short idx, unsigned short max,
+                 struct List* result)
+{
+  struct TrieNode* next;
+  int next_idx = idx + 1;
+
+  /* star at the end position */
+  /* TODO: unify the logic below */
+  if (next_idx == max)
+    {
+      if (trienode_values(node))
+        list_append(result, listnode_alloc(trienode_values(node)));
+    }
+  else
+    {
+      /* start at the beginning and middle */
+      for (next = node; next; next = trienode_next(next), next_idx++)
+        {
+          if (trienode_key(next) != keys[next_idx])
+            break;
+          if (next_idx == max-1)
+            {
+              if (trienode_values(next))
+                list_append(result, listnode_alloc(trienode_values(next)));
+              break;
+            }
+        }
+    }
+
+  if (trienode_next(node))
+    trie_search_star(trienode_next(node), keys, idx, max, result);
+  if (trienode_sibling(node))
+    trie_search_star(trienode_sibling(node), keys, idx, max, result);
+}
+
+void
 trie_search1(struct TrieNode* node,
              char* keys, unsigned short idx, unsigned short max,
              struct List* result)
@@ -175,15 +213,14 @@ trie_search1(struct TrieNode* node,
   if (!node)
     return;
 
+  assert(idx < max);
+
   if (keys[idx] == '*')
-    {
-    }
+    trie_search_star(node, keys, idx, max, result);
   else if (keys[idx] == '?')
     {
       idx++;
-      if (idx > max)
-        return;
-      else if (idx == max)
+      if (idx == max)
         {
           struct TrieNode* sibling;
           for (sibling = node; sibling; sibling = trienode_sibling(sibling))
@@ -202,9 +239,7 @@ trie_search1(struct TrieNode* node,
   else if (trienode_key(node) == tolower(keys[idx]))
     {
       idx++;
-      if (idx > max)
-        return;
-      else if (idx == max)
+      if (idx == max)
         {
           struct ListNode* value = listnode_alloc(trienode_values(node));
           list_append(result, value);

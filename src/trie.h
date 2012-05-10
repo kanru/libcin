@@ -35,6 +35,9 @@ struct List* trie_search(struct Trie* trie, char* keys);
 void trie_search1(struct TrieNode* node,
                   char* keys, unsigned short idx, unsigned short max,
                   struct List* result);
+void trie_search_star(struct TrieNode* node,
+                      char* keys, unsigned short idx, unsigned short max,
+                      struct List* result);
 void trie_search_free(struct List* result);
 struct TrieNode* trie_root(struct Trie* trie);
 void trie_set_root(struct Trie* trie, struct TrieNode* root);
